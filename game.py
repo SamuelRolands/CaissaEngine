@@ -5,7 +5,7 @@ from validate import validate_move
 def print_board(board_dict):
     """Displays the board state in a readable format."""
     print("\nCurrent Board State:")
-    for piece, position in sorted(board_dict.items()):  # Sorted for readability
+    for piece, position in sorted(board_dict.items()):
         print(f"{piece}: {position}")
     print("-" * 30)
 
@@ -17,7 +17,6 @@ def move_piece(board_dict):
         if user_input.lower() == "quit":
             print("Game exited.")
             break
-
         try:
             piece, start, end = user_input.split()
             
@@ -29,7 +28,6 @@ def move_piece(board_dict):
                 print("Invalid move: Does not follow chess rules.")
                 continue
 
-            # Move the piece
             board_dict[piece] = end
             storage.save_move(piece, start, end)
 
@@ -37,7 +35,6 @@ def move_piece(board_dict):
 
         except ValueError:
             print("Incorrect format. Use: 'wP1 e2 e4'")
-
 if __name__ == "__main__":
     chess_board = board.initialize_board()
     print_board(chess_board)
