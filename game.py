@@ -1,10 +1,11 @@
 import board
 import storage
+from validate import validate_move
 
 def print_board(board_dict):
     """Displays the board state in a readable format."""
     print("\nCurrent Board State:")
-    for piece, position in board_dict.items():
+    for piece, position in sorted(board_dict.items()):  # Sorted for readability
         print(f"{piece}: {position}")
     print("-" * 30)
 
@@ -21,7 +22,11 @@ def move_piece(board_dict):
             piece, start, end = user_input.split()
             
             if piece not in board_dict or board_dict[piece] != start:
-                print("Invalid move. Try again.")
+                print("Invalid move: Piece not found at given position.")
+                continue
+
+            if not validate_move(piece, start, end, board_dict):
+                print("Invalid move: Does not follow chess rules.")
                 continue
 
             # Move the piece
