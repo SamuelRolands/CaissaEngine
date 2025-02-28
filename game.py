@@ -1,5 +1,6 @@
 import board
 import storage
+import legend
 from validate import validate_move
 
 def print_board(board_dict):
@@ -90,6 +91,7 @@ def move_piece(board_dict):
             print("Incorrect format. Use: 'wP1 e2 e4'")
 
 if __name__ == "__main__":
+    legend.print_legend()
     chess_board = board.initialize_board()
     print_board(chess_board)
     move_piece(chess_board)
