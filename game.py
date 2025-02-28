@@ -3,10 +3,33 @@ import storage
 from validate import validate_move
 
 def print_board(board_dict):
-    """Displays the board state in a readable format."""
+    """Displays the chess board as an 8x8 grid with piece symbols and coordinate labels."""
+    # Mapping for Unicode chess symbols, using the first two characters of the piece key.
+    piece_symbols = {
+        'wK': '♔', 'wQ': '♕', 'wR': '♖', 'wB': '♗', 'wN': '♘', 'wP': '♙',
+        'bK': '♚', 'bQ': '♛', 'bR': '♜', 'bB': '♝', 'bN': '♞', 'bP': '♟'
+    }
+    files = "abcdefgh"
+    
     print("\nCurrent Board State:")
-    for piece, position in sorted(board_dict.items()):
-        print(f"{piece}: {position}")
+    # Ranks from 8 (top) to 1 (bottom)
+    for rank in range(8, 0, -1):
+        row_str = f"{rank} "
+        for file in files:
+            square = f"{file}{rank}"
+            piece_here = None
+            for key, pos in board_dict.items():
+                if pos == square:
+                    piece_here = key
+                    break
+            if piece_here:
+                # Use the first two characters (e.g., 'wP' for a white pawn) to get the symbol.
+                symbol = piece_symbols.get(piece_here[:2], piece_here[:2])
+            else:
+                symbol = '.'
+            row_str += symbol + " "
+        print(row_str)
+    print("  " + " ".join(files))
     print("-" * 30)
 
 def get_piece_at(square, board_dict):
