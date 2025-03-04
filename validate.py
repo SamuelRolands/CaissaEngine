@@ -28,7 +28,7 @@ def is_path_clear(start, end, board):
     
     while (current_file != ord(end_file)) or (current_rank != end_rank):
         square = f"{chr(current_file)}{current_rank}"
-        if square in board.values():
+        if any(pos == square for pos in board.values()):
             return False
         current_file += file_step
         current_rank += rank_step
@@ -114,4 +114,6 @@ if __name__ == "__main__":
     print(validate_move('wP1', 'e2', 'e5', test_board))  # Should be False (pawn too far)
     print(validate_move('wQ', 'd1', 'h5', test_board))  # Should be True (queen move)
     print(validate_move('bK', 'e8', 'e6', test_board))  # Should be False (king too far)
+    print(is_path_clear('d1', 'h5', test_board))  # Expecting True if path is clear
+
 
