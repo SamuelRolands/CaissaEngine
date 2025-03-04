@@ -26,7 +26,7 @@ def is_path_clear(start, end, board):
     current_file = ord(start_file) + file_step
     current_rank = start_rank + rank_step
     
-    while (current_file != ord(end_file)) or (current_rank != end_rank):
+    while (current_file != ord(end_file)) and (current_rank != end_rank):
         square = f"{chr(current_file)}{current_rank}"
         if any(pos == square for pos in board.values()):
             return False
@@ -94,7 +94,7 @@ def validate_move(piece, start, end, board):
             rook_piece = f"{piece[0]}R{'2' if kingside else '1'}"
 
             # Check if the rook is unmoved and the path is clear
-            if rook_piece in has_moved and not has_moved[rook_piece]:
+            if not has_moved.get(rook_piece, True):
                 if is_path_clear(start, rook_pos, board):
                     return True
 
