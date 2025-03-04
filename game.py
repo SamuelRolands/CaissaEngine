@@ -95,4 +95,3 @@ if __name__ == "__main__":
     chess_board = board.initialize_board()
     print_board(chess_board)
     move_piece(chess_board)
-    print IOError
