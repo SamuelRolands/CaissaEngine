@@ -1,3 +1,9 @@
+has_moved = {
+    'wK': False, 'bK': False,  # Kings
+    'wR1': False, 'wR2': False,  # White rooks
+    'bR1': False, 'bR2': False   # Black rooks
+}
+
 def is_path_clear(start, end, board):
     """
     Checks that all squares between start and end (exclusive) are empty.
@@ -76,7 +82,36 @@ def validate_move(piece, start, end, board):
             return is_path_clear(start, end, board)
 
     elif piece_type == 'K':
+        # Regular one-square move
         if max(file_diff, rank_diff) == 1:
+            has_moved[piece] = True
             return True
+    
+        # Castling Logic: King moves exactly 2 squares sideways
+        if not has_moved[piece] and rank_diff == 0 and file_diff == 2:
+            kingside = end_file > start_file  # True if castling kingside
+            rook_pos = f"{'h' if kingside else 'a'}{start_rank}"
+            rook_piece = f"{piece[0]}R{'2' if kingside else '1'}"
+
+            # Check if the rook is unmoved and the path is clear
+            if rook_piece in has_moved and not has_moved[rook_piece]:
+                if is_path_clear(start, rook_pos, board):
+                    return True
+
+        return False
+
 
     return False
+
+if __name__ == "__main__":
+    test_board = {
+        'wP1': 'e2', 'bP1': 'e7',  # Sample pieces
+        'wK': 'e1', 'bK': 'e8',
+        'wQ': 'd1', 'bQ': 'd8'
+    }
+
+    print(validate_move('wP1', 'e2', 'e4', test_board))  # Should be True (pawn move)
+    print(validate_move('wP1', 'e2', 'e5', test_board))  # Should be False (pawn too far)
+    print(validate_move('wQ', 'd1', 'h5', test_board))  # Should be True (queen move)
+    print(validate_move('bK', 'e8', 'e6', test_board))  # Should be False (king too far)
+
