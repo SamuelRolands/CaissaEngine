@@ -12,23 +12,15 @@ def is_path_clear(start, end, board):
     start_file, start_rank = start[0], int(start[1])
     end_file, end_rank = end[0], int(end[1])
     
-    file_step = 0
-    rank_step = 0
-    if end_file > start_file:
-        file_step = 1
-    elif end_file < start_file:
-        file_step = -1
-    if end_rank > start_rank:
-        rank_step = 1
-    elif end_rank < start_rank:
-        rank_step = -1
-    
+    file_step = 1 if end_file > start_file else -1 if end_file < start_file else 0
+    rank_step = 1 if end_rank > start_rank else -1 if end_rank < start_rank else 0
+
     current_file = ord(start_file) + file_step
     current_rank = start_rank + rank_step
     
-    while (current_file != ord(end_file)) and (current_rank != end_rank):
+    while (current_file != ord(end_file)) or (current_rank != end_rank):
         square = f"{chr(current_file)}{current_rank}"
-        if any(pos == square for pos in board.values()):
+        if any(pos == square for pos in board.values()):  # FIXED
             return False
         current_file += file_step
         current_rank += rank_step
@@ -47,7 +39,6 @@ def validate_move(piece, start, end, board):
         direction = 1 if piece[0] == 'w' else -1
 
         if start_file == end_file:
-
             if (end_rank - start_rank) == direction:
                 if end in board.values():
                     return False
@@ -56,12 +47,11 @@ def validate_move(piece, start, end, board):
             if (end_rank - start_rank) == 2 * direction and (start_rank == 2 or start_rank == 7):
                 intermediate_rank = start_rank + direction
                 intermediate_square = f"{start_file}{intermediate_rank}"
-                if intermediate_square in board.values() or end in board.values():
+                if any(pos == intermediate_square for pos in board.values()) or end in board.values():
                     return False
                 return True
 
         elif file_diff == 1 and (end_rank - start_rank) == direction:
-
             if end in board.values():
                 return True
 
@@ -88,18 +78,16 @@ def validate_move(piece, start, end, board):
             return True
     
         # Castling Logic: King moves exactly 2 squares sideways
-        if not has_moved[piece] and rank_diff == 0 and file_diff == 2:
+        if not has_moved.get(piece, True) and rank_diff == 0 and file_diff == 2:
             kingside = end_file > start_file  # True if castling kingside
             rook_pos = f"{'h' if kingside else 'a'}{start_rank}"
             rook_piece = f"{piece[0]}R{'2' if kingside else '1'}"
 
             # Check if the rook is unmoved and the path is clear
-            if not has_moved.get(rook_piece, True):
-                if is_path_clear(start, rook_pos, board):
-                    return True
+            if not has_moved.get(rook_piece, True) and is_path_clear(start, rook_pos, board):
+                return True
 
         return False
-
 
     return False
 
@@ -114,6 +102,4 @@ if __name__ == "__main__":
     print(validate_move('wP1', 'e2', 'e5', test_board))  # Should be False (pawn too far)
     print(validate_move('wQ', 'd1', 'h5', test_board))  # Should be True (queen move)
     print(validate_move('bK', 'e8', 'e6', test_board))  # Should be False (king too far)
-    print(is_path_clear('d1', 'h5', test_board))  # Expecting True if path is clear
-
-
+    print(is_path_clear('d1', 'h5', test_board))  # Should now return True!
