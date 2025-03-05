@@ -96,7 +96,7 @@ def validate_move(piece, start, end, board):
 
     return False
 
-if __name__ == "__main__":
+'''if __name__ == "__main__":
     test_board = {
         'wP1': 'e2', 'bP1': 'e7',  # Sample pieces
         'wK': 'e1', 'bK': 'e8',
@@ -107,4 +107,34 @@ if __name__ == "__main__":
     print(validate_move('wP1', 'e2', 'e5', test_board))  # Should be False (pawn too far)
     print(validate_move('wQ', 'd1', 'h5', test_board))  # Should be True (queen move)
     print(validate_move('bK', 'e8', 'e6', test_board))  # Should be False (king too far)
-    print(is_path_clear('d1', 'h5', test_board))  # Should now return True!
+    print(is_path_clear('d1', 'h5', test_board))  # Should now return True!'''
+if __name__ == "__main__":
+    test_board = {
+        'wP1': 'e2', 'bP1': 'e7',  # Pawns in initial position
+        'wK': 'e1', 'bK': 'e8',
+        'wQ': 'd1', 'bQ': 'd8',
+        'wB1': 'c1', 'bB1': 'c8',
+        'wR1': 'a1', 'bR1': 'a8'
+    }
+
+    # Expected True (pawn one step forward)
+    print(validate_move('wP1', 'e2', 'e3', test_board))
+
+    # Expected True (pawn two steps forward from start)
+    print(validate_move('wP1', 'e2', 'e4', test_board))
+
+    # Expected False (pawn can't jump over pieces)
+    print(validate_move('wP1', 'e2', 'e5', test_board))
+
+    # Expected False (queen blocked by own pawn)
+    print(validate_move('wQ', 'd1', 'h5', test_board))
+
+    # Expected True (rook moving straight, no blocks)
+    print(validate_move('wR1', 'a1', 'a4', test_board))
+
+    # Expected False (bishop blocked at start)
+    print(validate_move('wB1', 'c1', 'f4', test_board))
+
+    # Expected False (king can't move two squares normally)
+    print(validate_move('wK', 'e1', 'e3', test_board))
+
