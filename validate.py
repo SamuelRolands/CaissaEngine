@@ -18,12 +18,17 @@ def is_path_clear(start, end, board):
     current_file = ord(start_file) + file_step
     current_rank = start_rank + rank_step
     
-    while (current_file != ord(end_file)) or (current_rank != end_rank):
+    print(f"Checking path from {start} to {end}")
+    print(f"file_step={file_step}, rank_step={rank_step}")
+    while (current_file != ord(end_file) or current_rank != end_rank):
         square = f"{chr(current_file)}{current_rank}"
-        if any(pos == square for pos in board.values()):  # FIXED
+        print(f"Checking square: {square}")
+        if any(pos == square for pos in board.values()):  
+            print(f"Blocked by piece at {square}")
             return False
         current_file += file_step
         current_rank += rank_step
+
     return True
 
 
