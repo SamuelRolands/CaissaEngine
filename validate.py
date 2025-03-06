@@ -67,7 +67,7 @@ def validate_move(piece, start, end, board):
             
             if not has_moved.get(rook_piece, True) and is_path_clear(start, rook_pos, board):
                 return True
-    
+    pass
     return False
 
 def make_move(piece, start, end, board):
