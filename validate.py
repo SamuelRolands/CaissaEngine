@@ -70,6 +70,27 @@ def validate_move(piece, start, end, board):
     
     return False
 
+def make_move(piece, start, end, board):
+    if not validate_move(piece, start, end, board):
+        print("Invalid move!")
+        return False
+
+    # Remove captured piece if any
+    captured_piece = next((p for p, pos in board.items() if pos == end), None)
+    if captured_piece:
+        del board[captured_piece]
+
+    # Update board with new position
+    board[piece] = end
+
+    # If king or rook moves, update has_moved status
+    if piece in has_moved:
+        has_moved[piece] = True
+
+    print(f"Moved {piece} from {start} to {end}")
+    return True
+
+
 if __name__ == "__main__":
     test_board = {
         'wP1': 'e2', 'bP1': 'e7',
