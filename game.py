@@ -1,11 +1,10 @@
 import board
 import storage
 import legend
-from validate import validate_move
+from validate import validate_move, undo_move
 
 def print_board(board_dict):
     """Displays the chess board as an 8x8 grid with piece symbols and coordinate labels."""
-    # Mapping for Unicode chess symbols, using the first two characters of the piece key.
     piece_symbols = {
         'wK': '♔', 'wQ': '♕', 'wR': '♖', 'wB': '♗', 'wN': '♘', 'wP': '♙',
         'bK': '♚', 'bQ': '♛', 'bR': '♜', 'bB': '♝', 'bN': '♞', 'bP': '♟'
@@ -13,7 +12,6 @@ def print_board(board_dict):
     files = "abcdefgh"
     
     print("\nCurrent Board State:")
-    # Ranks from 8 (top) to 1 (bottom)
     for rank in range(8, 0, -1):
         row_str = f"{rank} "
         for file in files:
@@ -24,7 +22,6 @@ def print_board(board_dict):
                     piece_here = key
                     break
             if piece_here:
-                # Use the first two characters (e.g., 'wP' for a white pawn) to get the symbol.
                 symbol = piece_symbols.get(piece_here[:2], piece_here[:2])
             else:
                 symbol = '.'
@@ -41,46 +38,42 @@ def get_piece_at(square, board_dict):
     return None
 
 def move_piece(board_dict):
-    """Handles user move input, including capturing and turn management."""
+    """Handles user move input, including capturing, turn management, and undo functionality."""
     turn = 'w'  # White starts
     while True:
-        user_input = input(f"Turn {turn.upper()} - Enter move (e.g., wP1 e2 e4) or 'quit': ").strip()
+        user_input = input(f"Turn {turn.upper()} - Enter move (e.g., wP1 e2 e4), 'undo', or 'quit': ").strip()
+        
         if user_input.lower() == "quit":
             print("Game exited.")
             break
 
+        if user_input.lower() == "undo":
+            if undo_move(board_dict):
+                print("Last move undone.")
+                print_board(board_dict)
+            else:
+                print("No moves to undo.")
+            continue
+
         try:
             piece, start, end = user_input.split()
             
-            # Enforce turn: piece must match current turn.
+            # Enforce turn: the piece must belong to the current player.
             if piece[0] != turn:
                 print("Invalid move: It's not your turn.")
                 continue
 
-            # Check if the piece exists at the given start position.
+            # Check if the piece exists at the start square.
             if piece not in board_dict or board_dict[piece] != start:
                 print("Invalid move: Piece not found at given position.")
                 continue
 
-            # Validate the move according to piece-specific rules.
+            # Use the validate_move function, which also updates the board and logs the move.
             if not validate_move(piece, start, end, board_dict):
                 print("Invalid move: Does not follow chess rules.")
                 continue
 
-            # Check for capturing: Is the destination occupied?
-            target_piece = get_piece_at(end, board_dict)
-            if target_piece:
-                # Prevent capturing your own piece.
-                if target_piece[0] == piece[0]:
-                    print("Invalid move: Cannot capture your own piece.")
-                    continue
-                else:
-                    print(f"Capture! {piece} takes {target_piece}.")
-                    # Remove the captured piece.
-                    del board_dict[target_piece]
-
-            # Move the piece.
-            board_dict[piece] = end
+            # Save the move to storage.
             storage.save_move(piece, start, end)
             print_board(board_dict)
 
