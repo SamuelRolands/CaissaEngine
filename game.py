@@ -1,7 +1,7 @@
 import board
 import storage
 import legend
-from validate import validate_move, undo_move, is_in_check
+from validate import validate_move, undo_move, is_in_check, is_checkmate
 
 def print_board(board_dict):
     """Displays the chess board as an 8x8 grid with piece symbols and coordinate labels."""
@@ -22,7 +22,6 @@ def print_board(board_dict):
                     piece_here = key
                     break
             if piece_here:
-                # Get symbol using the first two characters (e.g., 'wP')
                 symbol = piece_symbols.get(piece_here[:2], piece_here[:2])
             else:
                 symbol = '.'
@@ -44,6 +43,7 @@ def move_piece(board_dict):
       - Executing moves
       - Checking if the move leaves the king in check (illegal)
       - Undoing the move if needed
+      - Checkmate detection
       - Allowing 'undo' and 'quit' commands
     """
     turn = 'w'  # White starts
@@ -72,7 +72,7 @@ def move_piece(board_dict):
             
             # Check if the piece exists at the start square.
             if piece not in board_dict or board_dict[piece] != start:
-                print("Invalid move: Piece not found at the given position.")
+                print("Invalid move: Piece not found at given position.")
                 continue
             
             # Validate and execute the move.
@@ -80,19 +80,23 @@ def move_piece(board_dict):
                 print("Invalid move: Does not follow chess rules.")
                 continue
             
-            # Save move to storage.
             storage.save_move(piece, start, end)
             
-            # **Check:** If the move leaves the player's king in check, it's illegal.
+            # After executing the move, check if it leaves the mover's king in check.
             if is_in_check(board_dict, turn):
                 print("Illegal move: Your king is in check!")
-                # Undo the move.
                 undo_move(board_dict)
                 continue
             
             print_board(board_dict)
+            
             # Switch turn.
             turn = 'b' if turn == 'w' else 'w'
+            
+            # After switching, check if the new turn is in checkmate.
+            if is_checkmate(board_dict, turn):
+                print(f"Checkmate! { 'White' if turn=='b' else 'Black' } wins!")
+                break
             
         except ValueError:
             print("Incorrect format. Use: 'wP1 e2 e4'")
