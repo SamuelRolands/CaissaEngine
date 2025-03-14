@@ -3,6 +3,7 @@ import storage
 import legend
 from validate import validate_move
 
+
 def print_board(board_dict):
     """Displays the chess board as an 8x8 grid with piece symbols and coordinate labels."""
     piece_symbols = {
@@ -36,6 +37,17 @@ def get_piece_at(square, board_dict):
         if pos == square:
             return p
     return None
+
+def is_stalemate(turn, board_dict):
+    """Checks if the current player has no legal moves but is not in check."""
+    for piece, position in board_dict.items():
+        if piece[0] == turn:  # Check only the current player's pieces
+            for rank in range(1, 9):
+                for file in "abcdefgh":
+                    destination = f"{file}{rank}"
+                    if validate_move(piece, position, destination, board_dict):
+                        return False  # At least one legal move exists
+    return True  # No legal moves available
 
 def move_piece(board_dict):
     """Handles user move input, including capturing, turn management, and en passant."""
@@ -89,6 +101,12 @@ def move_piece(board_dict):
             board_dict[piece] = end
             storage.save_move(piece, start, end)
             print_board(board_dict)
+            
+            # Check for stalemate
+            if is_stalemate('b' if turn == 'w' else 'w', board_dict):
+                print("Game over: Stalemate! It's a draw.")
+                break
+            
             turn = 'b' if turn == 'w' else 'w'
             
         except ValueError:
