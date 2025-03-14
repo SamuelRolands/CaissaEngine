@@ -104,7 +104,6 @@ def move_piece(board_dict):
         except ValueError:
             print("Incorrect format. Use: 'wP1 e2 e4'")
 
-
 if __name__ == "__main__":
     legend.print_legend()
     chess_board = board.initialize_board()
