@@ -38,68 +38,72 @@ def get_piece_at(square, board_dict):
     return None
 
 def move_piece(board_dict):
-    """
-    Handles user move input including:
-      - Executing moves
-      - Checking if the move leaves the king in check (illegal)
-      - Undoing the move if needed
-      - Checkmate detection
-      - Allowing 'undo' and 'quit' commands
-    """
+    """Handles user move input, including capturing, turn management, and pawn promotion."""
     turn = 'w'  # White starts
     while True:
-        user_input = input(f"Turn {turn.upper()} - Enter move (e.g., wP1 e2 e4), 'undo', or 'quit': ").strip()
-        
+        user_input = input(f"Turn {turn.upper()} - Enter move (e.g., wP1 e2 e4) or 'quit': ").strip()
         if user_input.lower() == "quit":
             print("Game exited.")
             break
-        
-        if user_input.lower() == "undo":
-            if undo_move(board_dict):
-                print("Last move undone.")
-                print_board(board_dict)
-            else:
-                print("No moves to undo.")
-            continue
-        
+
         try:
             piece, start, end = user_input.split()
             
-            # Enforce turn: ensure the piece belongs to the current player.
+            # Enforce turn: piece must match current turn.
             if piece[0] != turn:
                 print("Invalid move: It's not your turn.")
                 continue
-            
-            # Check if the piece exists at the start square.
+
+            # Check if the piece exists at the given start position.
             if piece not in board_dict or board_dict[piece] != start:
                 print("Invalid move: Piece not found at given position.")
                 continue
-            
-            # Validate and execute the move.
+
+            # Validate the move according to piece-specific rules.
             if not validate_move(piece, start, end, board_dict):
                 print("Invalid move: Does not follow chess rules.")
                 continue
-            
+
+            # Check for capturing: Is the destination occupied?
+            target_piece = get_piece_at(end, board_dict)
+            if target_piece:
+                # Prevent capturing your own piece.
+                if target_piece[0] == piece[0]:
+                    print("Invalid move: Cannot capture your own piece.")
+                    continue
+                else:
+                    print(f"Capture! {piece} takes {target_piece}.")
+                    # Remove the captured piece.
+                    del board_dict[target_piece]
+
+            # Move the piece.
+            board_dict[piece] = end
+
+            # **Pawn Promotion Logic**
+            if piece[1] == 'P':  # Only applies to pawns
+                rank = int(end[1])
+                if (piece[0] == 'w' and rank == 8) or (piece[0] == 'b' and rank == 1):
+                    print("Pawn promotion! Choose a piece (Q, R, B, N):")
+                    while True:
+                        promotion_choice = input().strip().upper()
+                        if promotion_choice in ['Q', 'R', 'B', 'N']:
+                            new_piece = piece[0] + promotion_choice  # e.g., 'wQ' for white queen
+                            del board_dict[piece]  # Remove pawn
+                            board_dict[new_piece] = end  # Replace with new piece
+                            print(f"Pawn promoted to {new_piece}!")
+                            break
+                        else:
+                            print("Invalid choice. Enter Q, R, B, or N.")
+
             storage.save_move(piece, start, end)
-            
-            # After executing the move, check if it leaves the mover's king in check.
-            if is_in_check(board_dict, turn):
-                print("Illegal move: Your king is in check!")
-                undo_move(board_dict)
-                continue
-            
             print_board(board_dict)
-            
+
             # Switch turn.
             turn = 'b' if turn == 'w' else 'w'
-            
-            # After switching, check if the new turn is in checkmate.
-            if is_checkmate(board_dict, turn):
-                print(f"Checkmate! { 'White' if turn=='b' else 'Black' } wins!")
-                break
-            
+
         except ValueError:
             print("Incorrect format. Use: 'wP1 e2 e4'")
+
 
 if __name__ == "__main__":
     legend.print_legend()
