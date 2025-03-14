@@ -1,7 +1,7 @@
 import board
 import storage
 import legend
-from validate import validate_move, undo_move, is_in_check, is_checkmate
+from validate import validate_move
 
 def print_board(board_dict):
     """Displays the chess board as an 8x8 grid with piece symbols and coordinate labels."""
@@ -31,15 +31,17 @@ def print_board(board_dict):
     print("-" * 30)
 
 def get_piece_at(square, board_dict):
-    """Returns the piece key at a given square, or None if empty."""
+    """Returns the piece (key) at a given square, or None if empty."""
     for p, pos in board_dict.items():
         if pos == square:
             return p
     return None
 
 def move_piece(board_dict):
-    """Handles user move input, including capturing, turn management, and pawn promotion."""
-    turn = 'w'  # White starts
+    """Handles user move input, including capturing, turn management, and en passant."""
+    turn = 'w'
+    en_passant_target = None  # Tracks possible en passant capture square
+    
     while True:
         user_input = input(f"Turn {turn.upper()} - Enter move (e.g., wP1 e2 e4) or 'quit': ").strip()
         if user_input.lower() == "quit":
@@ -48,59 +50,47 @@ def move_piece(board_dict):
 
         try:
             piece, start, end = user_input.split()
-            
-            # Enforce turn: piece must match current turn.
+
             if piece[0] != turn:
                 print("Invalid move: It's not your turn.")
                 continue
 
-            # Check if the piece exists at the given start position.
             if piece not in board_dict or board_dict[piece] != start:
                 print("Invalid move: Piece not found at given position.")
                 continue
 
-            # Validate the move according to piece-specific rules.
             if not validate_move(piece, start, end, board_dict):
                 print("Invalid move: Does not follow chess rules.")
                 continue
 
-            # Check for capturing: Is the destination occupied?
             target_piece = get_piece_at(end, board_dict)
             if target_piece:
-                # Prevent capturing your own piece.
                 if target_piece[0] == piece[0]:
                     print("Invalid move: Cannot capture your own piece.")
                     continue
                 else:
                     print(f"Capture! {piece} takes {target_piece}.")
-                    # Remove the captured piece.
                     del board_dict[target_piece]
+            
+            # En passant logic
+            if piece[1] == 'P':  # If the piece is a pawn
+                start_file, start_rank = start[0], int(start[1])
+                end_file, end_rank = end[0], int(end[1])
+                
+                if abs(end_rank - start_rank) == 2:
+                    en_passant_target = (end_file, (start_rank + end_rank) // 2)
+                else:
+                    if en_passant_target and end == f"{en_passant_target[0]}{en_passant_target[1]}":
+                        captured_pawn = get_piece_at(f"{en_passant_target[0]}{start_rank}", board_dict)
+                        if captured_pawn and captured_pawn[0] != piece[0] and captured_pawn[1] == 'P':
+                            print(f"En passant! {piece} captures {captured_pawn}.")
+                            del board_dict[captured_pawn]
 
-            # Move the piece.
             board_dict[piece] = end
-
-            # **Pawn Promotion Logic**
-            if piece[1] == 'P':  # Only applies to pawns
-                rank = int(end[1])
-                if (piece[0] == 'w' and rank == 8) or (piece[0] == 'b' and rank == 1):
-                    print("Pawn promotion! Choose a piece (Q, R, B, N):")
-                    while True:
-                        promotion_choice = input().strip().upper()
-                        if promotion_choice in ['Q', 'R', 'B', 'N']:
-                            new_piece = piece[0] + promotion_choice  # e.g., 'wQ' for white queen
-                            del board_dict[piece]  # Remove pawn
-                            board_dict[new_piece] = end  # Replace with new piece
-                            print(f"Pawn promoted to {new_piece}!")
-                            break
-                        else:
-                            print("Invalid choice. Enter Q, R, B, or N.")
-
             storage.save_move(piece, start, end)
             print_board(board_dict)
-
-            # Switch turn.
             turn = 'b' if turn == 'w' else 'w'
-
+            
         except ValueError:
             print("Incorrect format. Use: 'wP1 e2 e4'")
 
